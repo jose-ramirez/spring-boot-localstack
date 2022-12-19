@@ -11,6 +11,7 @@ cloud:
       access-key: some-access-key
       secret-key: some-secret-key
     sqs:
+      polling-timeout: 1
       incoming-queue:
         url: http://localhost:4576/queue/incoming-queue
         name: incoming-queue

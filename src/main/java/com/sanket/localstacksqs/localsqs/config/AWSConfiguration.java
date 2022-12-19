@@ -5,16 +5,14 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.aws.messaging.config.QueueMessageHandlerFactory;
-import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
+import org.springframework.cloud.aws.messaging.config.SimpleMessageListenerContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.handler.annotation.support.PayloadArgumentResolver;
@@ -22,16 +20,19 @@ import org.springframework.messaging.handler.annotation.support.PayloadArgumentR
 import static java.util.Collections.singletonList;
 
 @Configuration
-public class AWSLocalSqs {
+public class AWSConfiguration {
 
-  @Value("cloud.aws.static.region")
+  @Value("${cloud.aws.region.static}")
   private String region;
 
-  @Value("cloud.aws.credentials.access-key")
+  @Value("${cloud.aws.credentials.access-key}")
   private String awsAccesskey;
 
-  @Value("cloud.aws.credentials.secret-key")
+  @Value("${cloud.aws.credentials.secret-key}")
   private String awsSecretKey;
+
+  @Value("${cloud.aws.sqs.polling-timeout}")
+  private Integer pollingTimeout;
 
   @Bean
   public QueueMessageHandlerFactory queueMessageHandlerFactory(MessageConverter messageConverter) {
@@ -51,11 +52,6 @@ public class AWSLocalSqs {
     // Deserialization support: (suppress "contentType=application/json" header requirement)
     converter.setStrictContentTypeMatch(false);
     return converter;
-  }
-
-  @Bean
-  public QueueMessagingTemplate queueMessagingTemplate(AmazonSQSAsync amazonSQSAsync){
-    return new QueueMessagingTemplate(amazonSQSAsync);
   }
 
   @Bean
@@ -83,5 +79,14 @@ public class AWSLocalSqs {
     amazonSQSAsync.createQueue(queueName);
     var queueUrl = amazonSQSAsync.getQueueUrl(queueName).getQueueUrl();
     amazonSQSAsync.purgeQueueAsync(new PurgeQueueRequest(queueUrl));
+  }
+
+  //This is to make tests run faster, as explained here: https://github.com/spring-attic/spring-cloud-aws/issues/504
+  @Bean
+  public SimpleMessageListenerContainerFactory simpleMessageListenerContainerFactory(AmazonSQSAsync amazonSQSAsync) {
+    SimpleMessageListenerContainerFactory factory = new SimpleMessageListenerContainerFactory();
+    factory.setAmazonSqs(amazonSQSAsync);
+    factory.setWaitTimeOut(pollingTimeout); // less than 10 sec when testing
+    return factory;
   }
 }

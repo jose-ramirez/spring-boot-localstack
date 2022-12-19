@@ -1,25 +1,17 @@
 package com.sanket.localstacksqs.localsqs;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sanket.localstacksqs.localsqs.model.EventData;
 import com.sanket.localstacksqs.localsqs.model.SampleEvent;
 import lombok.SneakyThrows;
 import org.awaitility.Duration;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.testcontainers.containers.localstack.LocalStackContainer;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -28,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class ControllerIntegrationTest {
 
   @Autowired
@@ -37,14 +30,14 @@ class ControllerIntegrationTest {
   @Qualifier("jsonMapper")
   private ObjectMapper objectMapper;
 
-  @Value("${cloud.aws.sqs.outgoing-queue.url}")
+  @Value("${cloud.aws.sqs.incoming-queue.url}")
   private String incoming = "incoming-queue";
 
   @Value("${cloud.aws.sqs.outgoing-queue.url}")
   private String outgoing = "outgoing-queue";
 
-  @SneakyThrows
   @Test
+  @SneakyThrows
   void testCompleteFlow() {
     amazonSQSAsync.sendMessage(incoming, objectMapper.writeValueAsString(mockEvent()));
 
