@@ -25,3 +25,7 @@ aws --endpoint-url=http://localhost:4576 sqs send-message --queue-url http://loc
 ## References:
 - https://github.com/spring-attic/spring-cloud-aws/issues/504
 - https://stackoverflow.com/questions/45818092/spring-boot-startup-error-for-aws-application-there-is-not-ec2-meta-data-avail
+- https://advancedweb.hu/how-to-use-the-aws-sqs-cli-to-receive-messages/
+- https://lobster1234.github.io/2017/04/05/working-with-localstack-command-line/
+- https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/examples-sqs-messages.html
+- https://sg.wantedly.com/companies/bebit/post_articles/317492
