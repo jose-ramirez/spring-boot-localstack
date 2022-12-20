@@ -6,7 +6,8 @@ You should have Docker, Docker Compose and awscli installed and working for the 
 
 ## How to test:
 
-Just run `mvn test -Dspring.profiles.actve=test`.
+- Start localstack locally: `docker-compose up`. This will start localstack at `http://localhost:4576` with the fake credentials provided in the config files.
+- Run `mvn test -Dspring.profiles.actve=test`.
 
 ## How to run:
 
